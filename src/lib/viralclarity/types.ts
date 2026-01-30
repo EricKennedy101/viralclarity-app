@@ -51,3 +51,12 @@ export type VideoAnalysisRecord = {
   rewriteSuggestions: RewriteSuggestions;
   createdAt: string;
 };
+
+export type AnalysisTier = 'preview' | 'full';
+
+export type PreviewAnalysis = Pick<
+  VideoAnalysisRecord,
+  'id' | 'status' | 'sourceType' | 'sourceUrl' | 'storagePath' | 'transcript' | 'hookAnalysis' | 'createdAt'
+> & { tier: 'preview' };
+
+export type FullAnalysis = VideoAnalysisRecord & { tier: 'full' };

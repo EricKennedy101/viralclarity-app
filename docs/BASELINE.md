@@ -1,5 +1,11 @@
 # Baseline
 
-To run locally you must set `https://tywlqefztuvfsmppbzii.supabase.co` and `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR5d2xxZWZ6dHV2ZnNtcHBiemlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3NDAwNTQsImV4cCI6MjA4NTMxNjA1NH0.99gVAWdo2hRMoIiM00x15CLo5aviS1hMM7trVggF3Gc`.
+To run locally you must set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 
 You can find these values in Supabase: Project → Settings → API.
+
+Storage bucket (manual step):
+
+- Supabase Dashboard → Storage → Create bucket `uploads` (private is fine).
+
+Uploads are limited to ~25MB, which typically supports clips up to ~60 seconds depending on bitrate.

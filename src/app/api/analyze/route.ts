@@ -62,42 +62,41 @@ export async function POST(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) {
-      return Response.json({ error: 'Please sign in to analyze videos.' }, { status: 401 });
-    }
-
+    const isPreview = !user;
     const monthKey = `${new Date().getUTCFullYear()}-${String(new Date().getUTCMonth() + 1).padStart(2, '0')}`;
-    const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('is_pro')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (profileError) {
-      return Response.json({ error: 'We couldn’t analyze this video. Try a shorter clip or try again.' }, { status: 500 });
-    }
-
-    const isPro = profile?.is_pro ?? false;
-    if (!isPro) {
-      const { data: usage, error: usageError } = await supabase
-        .from('user_usage')
-        .select('analyses_count')
+    if (!isPreview) {
+      const { data: profile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('is_pro')
         .eq('user_id', user.id)
-        .eq('month_key', monthKey)
         .maybeSingle();
 
-      if (usageError) {
+      if (profileError) {
         return Response.json({ error: 'We couldn’t analyze this video. Try a shorter clip or try again.' }, { status: 500 });
       }
 
-      if ((usage?.analyses_count ?? 0) >= 3) {
-        return Response.json(
-          {
-            locked: true,
-            message: 'Free tier limit reached. Upgrade to Pro to unlock full analysis.',
-          },
-          { status: 200 },
-        );
+      const isPro = profile?.is_pro ?? false;
+      if (!isPro) {
+        const { data: usage, error: usageError } = await supabase
+          .from('user_usage')
+          .select('analyses_count')
+          .eq('user_id', user.id)
+          .eq('month_key', monthKey)
+          .maybeSingle();
+
+        if (usageError) {
+          return Response.json({ error: 'We couldn’t analyze this video. Try a shorter clip or try again.' }, { status: 500 });
+        }
+
+        if ((usage?.analyses_count ?? 0) >= 3) {
+          return Response.json(
+            {
+              locked: true,
+              message: 'Free tier limit reached. Upgrade to Pro to unlock full analysis.',
+            },
+            { status: 200 },
+          );
+        }
       }
     }
 
@@ -149,7 +148,22 @@ Then return ONLY valid JSON in this shape:
     const content = payload?.choices?.[0]?.message?.content ?? '';
     try {
       const parsed = parseAnalysisJson(content);
-      return Response.json(parsed);
+      if (isPreview) {
+        return Response.json({
+          tier: 'preview',
+          hook_analysis: {
+            hook_text: parsed.hook_analysis.hook_text,
+            why_it_works: parsed.hook_analysis.why_it_works.slice(0, 3),
+          },
+          structure_breakdown: [],
+          rewrite_suggestions: {
+            hooks: [],
+            shot_list: [],
+            script_outline: [],
+          },
+        });
+      }
+      return Response.json({ ...parsed, tier: 'full' });
     } catch (error) {
       console.log('OpenAI analyze JSON parse error', error);
       const repairPrompt = `Fix this into valid JSON only, using the exact schema.\n\n${content}`;
@@ -168,7 +182,22 @@ Then return ONLY valid JSON in this shape:
       const repairedContent = repairPayload?.choices?.[0]?.message?.content ?? '';
       try {
         const repairedParsed = parseAnalysisJson(repairedContent);
-        return Response.json(repairedParsed);
+        if (isPreview) {
+          return Response.json({
+            tier: 'preview',
+            hook_analysis: {
+              hook_text: repairedParsed.hook_analysis.hook_text,
+              why_it_works: repairedParsed.hook_analysis.why_it_works.slice(0, 3),
+            },
+            structure_breakdown: [],
+            rewrite_suggestions: {
+              hooks: [],
+              shot_list: [],
+              script_outline: [],
+            },
+          });
+        }
+        return Response.json({ ...repairedParsed, tier: 'full' });
       } catch (repairError) {
         console.log('OpenAI analyze repair JSON parse error', repairError);
         return Response.json({ error: 'We couldn’t analyze this video. Try a shorter clip or try again.' }, { status: 502 });

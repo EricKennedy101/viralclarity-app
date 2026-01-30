@@ -6,6 +6,7 @@ Viral Clarity helps creators analyze viral TikTok videos to understand hooks, re
 
 - Upload MP4s and generate transcripts with Whisper.
 - GPT‑4o‑mini analysis for hooks, retention beats, and rewrites.
+- Guest preview mode (transcript + hook only), with full analysis unlocked after signup.
 - Save and reuse templates from winning analyses.
 - Pricing/paywall with Free vs Pro limits and locked results.
 - Supabase Storage for upload persistence.

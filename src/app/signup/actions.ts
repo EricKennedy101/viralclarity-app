@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { createClient } from '@/utils/supabase/server';
@@ -19,5 +20,22 @@ export async function signup(data: FormData) {
   }
 
   revalidatePath('/', 'layout');
-  redirect('/');
+  redirect('/analyze');
+}
+
+export async function sendMagicLink(email: string) {
+  const supabase = await createClient();
+  const origin = (await headers()).get('origin') ?? '';
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback?next=/analyze`,
+    },
+  });
+
+  if (error) {
+    return { error: true };
+  }
+
+  return { success: true };
 }

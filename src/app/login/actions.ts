@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 
@@ -17,20 +18,38 @@ export async function login(data: FormData) {
   }
 
   revalidatePath('/', 'layout');
-  redirect('/');
+  redirect('/analyze');
 }
 
 export async function signInWithGithub() {
   const supabase = await createClient();
+  const origin = (await headers()).get('origin') ?? '';
   const { data } = await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: `https://paddle-billing.vercel.app/auth/callback`,
+      redirectTo: `${origin}/auth/callback?next=/analyze`,
     },
   });
   if (data.url) {
     redirect(data.url);
   }
+}
+
+export async function sendMagicLink(email: string) {
+  const supabase = await createClient();
+  const origin = (await headers()).get('origin') ?? '';
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback?next=/analyze`,
+    },
+  });
+
+  if (error) {
+    return { error: true };
+  }
+
+  return { success: true };
 }
 
 export async function loginAnonymously() {
@@ -45,5 +64,5 @@ export async function loginAnonymously() {
   }
 
   revalidatePath('/', 'layout');
-  redirect('/');
+  redirect('/analyze');
 }

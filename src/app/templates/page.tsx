@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -9,21 +10,7 @@ export default async function TemplatesPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return (
-      <div className="mx-auto w-full max-w-4xl px-4 py-12">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Templates</CardTitle>
-            <CardDescription>Log in to view your saved templates.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link className="text-sm text-primary underline underline-offset-4" href="/login">
-              Go to login
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    redirect('/login?next=/templates');
   }
 
   const { data, error } = await supabase

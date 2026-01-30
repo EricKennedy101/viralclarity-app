@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: error.message }, { status: 500 });
     }
 
-    return Response.json({ id: data.id, created_at: data.created_at });
+    return Response.json({ id: data.id, created_at: data.created_at, tier: 'full' });
   } catch (error) {
     console.log(error);
     return Response.json({ error: 'Internal server error' }, { status: 500 });

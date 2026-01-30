@@ -1,14 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { AnalysisResult } from '@/components/viralclarity/AnalysisResult';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import type { VideoAnalysisRecord } from '@/lib/viralclarity/types';
+import type { AnalysisTier, VideoAnalysisRecord } from '@/lib/viralclarity/types';
+import { toPreviewAnalysis } from '@/lib/viralclarity/preview';
+import { createClient } from '@/utils/supabase/client';
+import { getUploadPath, UPLOAD_BUCKET } from '@/utils/supabase/storage';
+import { useUserInfo } from '@/hooks/useUserInfo';
 
 type AnalyzeApiResponse =
   | {
+      tier?: 'preview' | 'full';
       hook_analysis: {
         hook_text: string;
         why_it_works: string[];
@@ -36,12 +42,16 @@ const createId = () => {
 };
 
 export default function AnalyzePage() {
+  const supabase = createClient();
+  const { isAuthed } = useUserInfo(supabase);
   const [file, setFile] = useState<File | null>(null);
   const [sourceUrl, setSourceUrl] = useState('');
   const [analysis, setAnalysis] = useState<VideoAnalysisRecord | null>(null);
+  const [analysisTier, setAnalysisTier] = useState<AnalysisTier>('full');
   const [error, setError] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisStep, setAnalysisStep] = useState('');
+  const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 
   const handleAnalyzeSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -61,17 +71,46 @@ export default function AnalyzePage() {
       let transcript: string | undefined;
       if (file) {
         setAnalysisStep('Transcribing video…');
-        const formData = new FormData();
-        formData.append('file', file);
+        if (!file.type.startsWith('video/')) {
+          throw new Error('Upload failed. Please upload an MP4 or QuickTime video.');
+        }
+        if (file.size > MAX_UPLOAD_BYTES) {
+          throw new Error('Video too large. Please upload a shorter clip (≤60s).');
+        }
+        if (!supabase) {
+          throw new Error('Upload failed. Please refresh and try again.');
+        }
 
-        const response = await fetch('/api/transcribe', {
-          method: 'POST',
-          body: formData,
+        const path = getUploadPath(null, file.name);
+        const { error: uploadError } = await supabase.storage.from(UPLOAD_BUCKET).upload(path, file, {
+          upsert: true,
+          contentType: file.type,
         });
 
-        const payload = await response.json();
+        if (uploadError) {
+          throw new Error('Upload failed. Make sure your video is under 50MB.');
+        }
+
+        const transcribeBody = { storagePath: path };
+        console.log('transcribe request content-type', 'application/json');
+        console.log('transcribe request body keys', Object.keys(transcribeBody));
+        const response = await fetch('/api/transcribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(transcribeBody),
+        });
+
+        let payload: { transcript?: string; error?: string } | null = null;
+        try {
+          payload = await response.json();
+        } catch {
+          payload = null;
+        }
         if (!response.ok) {
-          throw new Error(payload?.error ?? 'We couldn’t analyze this video. Try a shorter clip or try again.');
+          if (response.status === 413) {
+            throw new Error('Video too large. Please upload a shorter clip (≤60s).');
+          }
+          throw new Error(payload?.error ?? 'Upload failed / Transcription failed. Try again.');
         }
 
         transcript = payload?.transcript;
@@ -130,11 +169,13 @@ export default function AnalyzePage() {
           },
           createdAt: new Date().toISOString(),
         };
+        setAnalysisTier('full');
         setAnalysis(lockedAnalysis);
         return;
       }
 
       const typedPayload = analyzePayload as Exclude<AnalyzeApiResponse, { locked: true }>;
+      const tier = typedPayload.tier ?? 'full';
       const nextAnalysis: VideoAnalysisRecord = {
         id: createId(),
         status: 'completed',
@@ -147,8 +188,8 @@ export default function AnalyzePage() {
           openingLine: typedPayload.hook_analysis.hook_text,
           hookType: 'analysis',
           score: 0,
-          notes: typedPayload.hook_analysis.why_it_works.join(' '),
-          keep: [],
+          notes: tier === 'preview' ? '' : typedPayload.hook_analysis.why_it_works.join(' '),
+          keep: typedPayload.hook_analysis.why_it_works,
           improve: [],
         },
         structureBreakdown: typedPayload.structure_breakdown.map((beat) => ({
@@ -174,7 +215,9 @@ export default function AnalyzePage() {
         createdAt: new Date().toISOString(),
       };
 
-      setAnalysis(nextAnalysis);
+      const resolvedTier: AnalysisTier = !isAuthed ? 'preview' : tier;
+      setAnalysisTier(resolvedTier);
+      setAnalysis(resolvedTier === 'preview' ? toPreviewAnalysis(nextAnalysis) : nextAnalysis);
     } catch (analysisError) {
       setError(
         analysisError instanceof Error
@@ -203,7 +246,7 @@ export default function AnalyzePage() {
               <Input
                 id="video-upload"
                 type="file"
-                accept="video/mp4"
+                accept="video/mp4,video/quicktime"
                 onChange={(event) => setFile(event.target.files?.[0] ?? null)}
               />
             </div>
@@ -218,11 +261,19 @@ export default function AnalyzePage() {
                 value={sourceUrl}
                 onChange={(event) => setSourceUrl(event.target.value)}
               />
+              <p className="text-xs text-muted-foreground">
+                TikTok/IG link ingestion: Pro (coming soon). Upload works now.
+              </p>
             </div>
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
             <Button type="submit" size="lg" className="w-full text-base" disabled={isAnalyzing}>
-              {isAnalyzing ? 'Transcribing...' : 'Analyze'}
+              {isAnalyzing ? 'Transcribing...' : 'Analyze a video (free preview)'}
             </Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/login">Unlock Pro (email login)</Link>
+            </Button>
+            <p className="text-xs text-muted-foreground">Pro features require login.</p>
+            <p className="text-xs text-muted-foreground">No signup required. Limited preview.</p>
             {isAnalyzing ? (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
@@ -234,7 +285,7 @@ export default function AnalyzePage() {
       </Card>
 
       {analysis ? (
-        <AnalysisResult analysis={analysis} />
+        <AnalysisResult analysis={analysis} tier={analysisTier} />
       ) : (
         <div className="mt-6 rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
           Upload a video to see why it worked — or why it didn’t.

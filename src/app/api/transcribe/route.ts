@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
+import { createClient } from '@/utils/supabase/server-internal';
+import { UPLOAD_BUCKET } from '@/utils/supabase/storage';
 
-const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
-
-const isSupportedMediaType = (type: string) => type.startsWith('audio/') || type.startsWith('video/');
+const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,24 +11,26 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'We couldn’t analyze this video. Try a shorter clip or try again.' }, { status: 500 });
     }
 
-    const formData = await request.formData();
-    const file = formData.get('file');
-
-    if (!(file instanceof File)) {
-      return Response.json({ error: 'Upload failed. Make sure your video is under 50MB.' }, { status: 400 });
+    const body = (await request.json()) as { storagePath?: string };
+    if (!body?.storagePath) {
+      return Response.json({ error: 'Upload failed. Please select a video to transcribe.' }, { status: 400 });
     }
 
-    if (!isSupportedMediaType(file.type)) {
-      return Response.json({ error: 'Upload failed. Please upload an MP4 or QuickTime video.' }, { status: 400 });
+    const supabase = await createClient();
+    const { data, error } = await supabase.storage.from(UPLOAD_BUCKET).download(body.storagePath);
+
+    if (error || !data) {
+      console.log(error);
+      return Response.json({ error: 'Upload failed / Transcription failed. Try again.' }, { status: 500 });
     }
 
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      return Response.json({ error: 'Upload failed. Make sure your video is under 50MB.' }, { status: 400 });
+    if (data.size > MAX_FILE_SIZE_BYTES) {
+      return Response.json({ error: 'Video too large. Please upload a shorter clip (≤60s).' }, { status: 413 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const buffer = Buffer.from(await data.arrayBuffer());
     const openAiForm = new FormData();
-    openAiForm.append('file', new File([buffer], file.name, { type: file.type }));
+    openAiForm.append('file', new File([buffer], 'upload.mp4', { type: 'video/mp4' }));
     openAiForm.append('model', 'whisper-1');
 
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {

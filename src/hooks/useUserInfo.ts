@@ -18,5 +18,6 @@ export function useUserInfo(supabase: SupabaseClient | null) {
     })();
   }, [supabase]);
 
-  return { user };
+  const isAuthed = Boolean(user);
+  return { user, isAuthed };
 }
