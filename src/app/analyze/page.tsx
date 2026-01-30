@@ -92,25 +92,30 @@ export default function AnalyzePage() {
         }
 
         const transcribeBody = { storagePath: path };
-        console.log('transcribe request content-type', 'application/json');
-        console.log('transcribe request body keys', Object.keys(transcribeBody));
         const response = await fetch('/api/transcribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(transcribeBody),
         });
 
+        if (!response.ok) {
+          const errorText = await response.text();
+          if (response.status === 413) {
+            throw new Error('Video too large. Please upload a shorter clip (≤60s).');
+          }
+          throw new Error(errorText || 'Upload failed / Transcription failed. Try again.');
+        }
+
+        const contentType = response.headers.get('content-type') ?? '';
+        if (!contentType.includes('application/json')) {
+          throw new Error('Transcription failed. Please try again.');
+        }
+
         let payload: { transcript?: string; error?: string } | null = null;
         try {
           payload = await response.json();
         } catch {
           payload = null;
-        }
-        if (!response.ok) {
-          if (response.status === 413) {
-            throw new Error('Video too large. Please upload a shorter clip (≤60s).');
-          }
-          throw new Error(payload?.error ?? 'Upload failed / Transcription failed. Try again.');
         }
 
         transcript = payload?.transcript;
