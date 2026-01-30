@@ -68,13 +68,14 @@ export class ProcessWebhook {
       return;
     }
 
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(customer.email);
-    if (userError || !userData?.user) {
+    const { data: usersData, error: userError } = await supabase.auth.admin.listUsers({ email: customer.email });
+    const userRecord = usersData?.users?.[0];
+    if (userError || !userRecord) {
       return;
     }
 
     const { error: profileError } = await supabase.from('user_profiles').upsert({
-      user_id: userData.user.id,
+      user_id: userRecord.id,
       is_pro: isPro,
       updated_at: new Date().toISOString(),
     });
