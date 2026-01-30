@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { User } from '@supabase/supabase-js';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -12,8 +11,8 @@ export default function Header({ user }: Props) {
     <nav>
       <div className="mx-auto max-w-7xl relative px-[32px] py-[18px] flex items-center justify-between">
         <div className="flex flex-1 items-center justify-start">
-          <Link className="flex items-center" href={'/'}>
-            <Image className="w-auto block" src="/logo.svg" width={131} height={28} alt="AeroEdit" />
+          <Link className="text-lg font-semibold text-foreground" href={'/'}>
+            Viral Clarity
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-end">

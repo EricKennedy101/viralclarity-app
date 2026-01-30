@@ -37,6 +37,10 @@ export class ProcessWebhook {
       .select();
 
     if (error) throw error;
+
+    const status = eventData.data.status;
+    const isPro = status === 'active' || status === 'trialing' || status === 'past_due';
+    await this.updateUserProStatus(eventData.data.customerId, isPro);
   }
 
   private async updateCustomerData(eventData: CustomerCreatedEvent | CustomerUpdatedEvent) {
@@ -50,5 +54,33 @@ export class ProcessWebhook {
       .select();
 
     if (error) throw error;
+  }
+
+  private async updateUserProStatus(customerId: string, isPro: boolean) {
+    const supabase = await createClient();
+    const { data: customer, error: customerError } = await supabase
+      .from('customers')
+      .select('email')
+      .eq('customer_id', customerId)
+      .maybeSingle();
+
+    if (customerError || !customer?.email) {
+      return;
+    }
+
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(customer.email);
+    if (userError || !userData?.user) {
+      return;
+    }
+
+    const { error: profileError } = await supabase.from('user_profiles').upsert({
+      user_id: userData.user.id,
+      is_pro: isPro,
+      updated_at: new Date().toISOString(),
+    });
+
+    if (profileError) {
+      throw profileError;
+    }
   }
 }

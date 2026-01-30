@@ -12,6 +12,9 @@ export function SidebarUserInfo() {
 
   async function handleLogout(e: MouseEvent) {
     e.preventDefault();
+    if (!supabase) {
+      return;
+    }
     await supabase.auth.signOut();
     location.reload();
   }

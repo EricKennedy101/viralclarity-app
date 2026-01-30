@@ -19,7 +19,7 @@ export function PriceCards({ loading, frequency, priceMap }: Props) {
   return (
     <div className="isolate mx-auto grid grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
       {PricingTier.map((tier) => (
-        <div key={tier.id} className={cn('rounded-lg bg-background/70 backdrop-blur-[6px] overflow-hidden')}>
+        <div key={tier.id} className={cn('flex flex-col h-full rounded-lg bg-background/70 backdrop-blur-[6px] overflow-hidden')}>
           <div className={cn('flex gap-5 flex-col rounded-lg rounded-b-none pricing-card-border')}>
             {tier.featured && <FeaturedCardGradient />}
             <PriceTitle tier={tier} />
@@ -35,12 +35,22 @@ export function PriceCards({ loading, frequency, priceMap }: Props) {
             </div>
             <div className={'px-8 text-[16px] leading-[24px]'}>{tier.description}</div>
           </div>
-          <div className={'px-8 mt-8'}>
-            <Button className={'w-full'} variant={'secondary'} asChild={true}>
-              <Link href={`/checkout/${tier.priceId[frequency.value]}`}>Get started</Link>
-            </Button>
-          </div>
           <FeaturesList tier={tier} />
+          <div className={'px-8 mt-auto pt-6'}>
+            {tier.id === 'advanced' ? (
+              <Button className={'w-full'} variant={'secondary'} asChild={true}>
+                <a href="mailto:hello@viralclarity.io">Contact us</a>
+              </Button>
+            ) : tier.id === 'pro' ? (
+              <Button className={'w-full'} variant={'secondary'} asChild={true}>
+                <Link href={`/checkout/${tier.priceId[frequency.value]}`}>Upgrade to Pro</Link>
+              </Button>
+            ) : (
+              <Button className={'w-full'} variant={'secondary'} asChild={true}>
+                <Link href="/signup">Get started</Link>
+              </Button>
+            )}
+          </div>
         </div>
       ))}
     </div>

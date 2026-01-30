@@ -30,6 +30,10 @@ export function Pricing({ country }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl relative px-[32px] flex flex-col items-center justify-between">
+      <div className="text-center">
+        <div className="text-3xl font-semibold">Pricing</div>
+        <p className="mt-2 text-sm text-muted-foreground">Turn viral videos into repeatable scripts.</p>
+      </div>
       <Toggle frequency={frequency} setFrequency={setFrequency} />
       <PriceCards frequency={frequency} loading={loading} priceMap={prices} />
     </div>

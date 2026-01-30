@@ -10,7 +10,7 @@ export function DashboardTutorialCard() {
       </CardHeader>
       <CardContent className={'p-0 flex flex-col gap-6'}>
         <div className="text-base leading-6 text-secondary">
-          Learn how to get the most out of AeroEdit tools and discover your inner artist.
+          Learn how to get the most out of Viral Clarity tools and sharpen your content.
         </div>
         <div>
           <Button size={'sm'} variant={'outline'} className={'flex gap-2 text-sm rounded-sm border-border'}>
