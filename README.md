@@ -12,7 +12,7 @@ Viral Clarity helps creators analyze viral TikTok videos to understand hooks, re
 
 ## Tech Stack
 
-- **Framework:** Next.js (App Router)
+- **Framework:** Next.js (App Router) (React)
 - **Database/Auth:** Supabase
 - **AI:** OpenAI (Whisper + GPT‑4o‑mini)
 - **Billing:** Paddle
@@ -58,16 +58,3 @@ pnpm typecheck
 pnpm build
 ```
 
-## Security
-
-Never commit real environment variables or secrets. Keep `.env.local` out of version control.
-
-## Portfolio Proof
-
-Capture screenshots of:
-
-- Deployed landing page and pricing toggle.
-- Analyze flow result UI (hook, beats, rewrites).
-- Templates list and detail pages.
-- Supabase tables (`video_analyses`, `script_templates`, `user_usage`, `user_profiles`).
-- API route logs for `/api/transcribe` and `/api/analyze`.
