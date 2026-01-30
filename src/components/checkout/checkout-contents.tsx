@@ -6,7 +6,7 @@ import { type Environments, initializePaddle, type Paddle } from '@paddle/paddle
 import type { CheckoutEventsData } from '@paddle/paddle-js/types/checkout/events';
 import throttle from 'lodash.throttle';
 import { useParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface PathParams {
   priceId: string;
@@ -27,10 +27,11 @@ export function CheckoutContents({ userEmail }: Props) {
     setCheckoutData(event);
   };
 
-  const updateItems = useCallback(
-    throttle((paddle: Paddle, priceId: string, quantity: number) => {
-      paddle.Checkout.updateItems([{ priceId, quantity }]);
-    }, 1000),
+  const updateItems = useMemo(
+    () =>
+      throttle((paddle: Paddle, priceId: string, quantity: number) => {
+        paddle.Checkout.updateItems([{ priceId, quantity }]);
+      }, 1000),
     [],
   );
 
@@ -73,6 +74,12 @@ export function CheckoutContents({ userEmail }: Props) {
       updateItems(paddle, priceId, quantity);
     }
   }, [paddle, priceId, quantity, updateItems]);
+
+  useEffect(() => {
+    return () => {
+      updateItems.cancel();
+    };
+  }, [updateItems]);
 
   return (
     <div
