@@ -68,8 +68,10 @@ export class ProcessWebhook {
       return;
     }
 
-    const { data: usersData, error: userError } = await supabase.auth.admin.listUsers({ email: customer.email });
-    const userRecord = usersData?.users?.[0];
+    const { data: usersData, error: userError } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 });
+    const userRecord = usersData?.users?.find(
+      (u) => (u.email ?? '').toLowerCase() === (customer.email ?? '').toLowerCase(),
+    );
     if (userError || !userRecord) {
       return;
     }
