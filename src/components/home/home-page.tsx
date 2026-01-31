@@ -8,7 +8,6 @@ import { useUserInfo } from '@/hooks/useUserInfo';
 import '../../styles/home-page.css';
 import Header from '@/components/home/header/header';
 import { HeroSection } from '@/components/home/hero-section/hero-section';
-import { Pricing } from '@/components/home/pricing/pricing';
 import { HomePageBackground } from '@/components/gradients/home-page-background';
 import { Footer } from '@/components/home/footer/footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -337,7 +336,9 @@ export function HomePage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-xl">Analyze a video</CardTitle>
-              <CardDescription>Upload an MP4 or paste a URL to preview the analysis.</CardDescription>
+              <CardDescription>
+                Beta: Upload an MP4 for a full breakdown. TikTok/IG links are Pro (coming soon).
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form className="space-y-4" onSubmit={handleAnalyzeSubmit}>
@@ -366,19 +367,18 @@ export function HomePage() {
                   {!file && sourceUrl.trim().length > 0 ? (
                     <p className="text-xs text-muted-foreground">Upload required for transcript soon.</p>
                   ) : null}
-                  <p className="text-xs text-muted-foreground">
-                    TikTok/IG link ingestion: Pro (coming soon). Upload works now.
-                  </p>
                 </div>
                 {error ? <p className="text-sm text-destructive">{error}</p> : null}
                 <Button type="submit" size="lg" className="w-full" disabled={isAnalyzing}>
-                  {isAnalyzing ? 'Transcribing...' : 'Analyze a video (free preview)'}
+                  {isAnalyzing ? 'Transcribing...' : 'Analyze (Beta — free)'}
                 </Button>
                 <Button asChild variant="outline" className="w-full">
-                  <Link href="/login">Unlock Pro (email login)</Link>
+                  <Link href={user ? '/app' : '/signup'}>
+                    {user ? 'Go to dashboard' : 'Save results (create free account)'}
+                  </Link>
                 </Button>
-                <p className="text-xs text-muted-foreground">Pro features require login.</p>
                 <p className="text-xs text-muted-foreground">No signup required. Limited preview.</p>
+                <p className="text-xs text-muted-foreground">Credits: 3 analyses/day (may change during beta).</p>
                 {user && remainingCredits !== null ? (
                   <p className="text-xs text-muted-foreground">You have {remainingCredits} credits left today.</p>
                 ) : null}
@@ -411,7 +411,19 @@ export function HomePage() {
             </div>
           )}
         </section>
-        <Pricing country="US" />
+        <section className="mx-auto w-full max-w-4xl px-4 pb-16">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl">Beta access</CardTitle>
+              <CardDescription>Everything is free during beta.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <p>3 analyses/day</p>
+              <p>Uploads supported (MP4)</p>
+              <p>TikTok/IG links: Pro (coming soon)</p>
+            </CardContent>
+          </Card>
+        </section>
         <Footer />
       </div>
     </>

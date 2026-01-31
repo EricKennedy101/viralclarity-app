@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { PriceTitle } from '@/components/home/pricing/price-title';
 import { Separator } from '@/components/ui/separator';
 import { FeaturedCardGradient } from '@/components/gradients/featured-card-gradient';
-import Link from 'next/link';
 
 interface Props {
   loading: boolean;
@@ -37,19 +36,9 @@ export function PriceCards({ loading, frequency, priceMap }: Props) {
           </div>
           <FeaturesList tier={tier} />
           <div className={'px-8 mt-auto pt-6'}>
-            {tier.id === 'advanced' ? (
-              <Button className={'w-full'} variant={'secondary'} asChild={true}>
-                <a href="mailto:hello@viralclarity.io">Contact us</a>
-              </Button>
-            ) : tier.id === 'pro' ? (
-              <Button className={'w-full'} variant={'secondary'} asChild={true}>
-                <Link href={`/checkout/${tier.priceId[frequency.value]}`}>Upgrade to Pro</Link>
-              </Button>
-            ) : (
-              <Button className={'w-full'} variant={'secondary'} asChild={true}>
-                <Link href="/signup">Get started</Link>
-              </Button>
-            )}
+            <Button className={'w-full'} variant={'secondary'} disabled>
+              Beta access
+            </Button>
           </div>
         </div>
       ))}

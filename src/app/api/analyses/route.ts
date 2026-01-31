@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       analysesCount = usage?.analyses_count ?? 0;
       if (analysesCount >= 3) {
         return Response.json(
-          { locked: true, message: 'Free limit reached. Upgrade to unlock.' },
+          { locked: true, message: 'Daily limit reached. Come back tomorrow.' },
           { status: 200 },
         );
       }

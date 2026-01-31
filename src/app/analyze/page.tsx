@@ -274,7 +274,9 @@ export default function AnalyzePage() {
       <Card>
         <CardHeader className="space-y-2">
           <CardTitle className="text-2xl">Analyze a video</CardTitle>
-          <CardDescription>Upload an MP4 or paste a URL to get an instant mock analysis.</CardDescription>
+          <CardDescription>
+            Beta: Upload an MP4 for a full breakdown. TikTok/IG links are Pro (coming soon).
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form className="space-y-5" onSubmit={handleAnalyzeSubmit}>
@@ -300,19 +302,21 @@ export default function AnalyzePage() {
                 value={sourceUrl}
                 onChange={(event) => setSourceUrl(event.target.value)}
               />
-              <p className="text-xs text-muted-foreground">
-                TikTok/IG link ingestion: Pro (coming soon). Upload works now.
-              </p>
             </div>
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
             <Button type="submit" size="lg" className="w-full text-base" disabled={isAnalyzing}>
-              {isAnalyzing ? 'Transcribing...' : 'Analyze a video (free preview)'}
+              {isAnalyzing ? 'Transcribing...' : 'Analyze (Beta — free)'}
             </Button>
             <Button asChild variant="outline" className="w-full">
-              <Link href="/login">Unlock Pro (email login)</Link>
+              <Link href={isAuthed ? '/app' : '/signup'}>
+                {isAuthed ? 'Go to dashboard' : 'Save results (create free account)'}
+              </Link>
             </Button>
-            <p className="text-xs text-muted-foreground">Pro features require login.</p>
             <p className="text-xs text-muted-foreground">No signup required. Limited preview.</p>
+            <p className="text-xs text-muted-foreground">Credits: 3 analyses/day (may change during beta).</p>
+            {isAuthed && remainingCredits !== null ? (
+              <p className="text-xs text-muted-foreground">You have {remainingCredits} credits left today.</p>
+            ) : null}
             {isAuthed && remainingCredits !== null ? (
               <p className="text-xs text-muted-foreground">You have {remainingCredits} credits left today.</p>
             ) : null}

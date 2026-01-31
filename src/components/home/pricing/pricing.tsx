@@ -1,41 +1,17 @@
-import { Toggle } from '@/components/shared/toggle/toggle';
-import { PriceCards } from '@/components/home/pricing/price-cards';
-import { useEffect, useState } from 'react';
-import { BillingFrequency, IBillingFrequency } from '@/constants/billing-frequency';
-import { Environments, initializePaddle, Paddle } from '@paddle/paddle-js';
-import { usePaddlePrices } from '@/hooks/usePaddlePrices';
-
-interface Props {
-  country: string;
-}
-
-export function Pricing({ country }: Props) {
-  const [frequency, setFrequency] = useState<IBillingFrequency>(BillingFrequency[0]);
-  const [paddle, setPaddle] = useState<Paddle | undefined>(undefined);
-
-  const { prices, loading } = usePaddlePrices(paddle, country);
-
-  useEffect(() => {
-    if (process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN && process.env.NEXT_PUBLIC_PADDLE_ENV) {
-      initializePaddle({
-        token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
-        environment: process.env.NEXT_PUBLIC_PADDLE_ENV as Environments,
-      }).then((paddle) => {
-        if (paddle) {
-          setPaddle(paddle);
-        }
-      });
-    }
-  }, []);
-
+export function Pricing() {
   return (
     <div className="mx-auto max-w-7xl relative px-[32px] flex flex-col items-center justify-between">
       <div className="text-center">
-        <div className="text-3xl font-semibold">Pricing</div>
-        <p className="mt-2 text-sm text-muted-foreground">Turn viral videos into repeatable scripts.</p>
+        <div className="text-3xl font-semibold">Beta access</div>
+        <p className="mt-2 text-sm text-muted-foreground">Free during beta with daily credits.</p>
       </div>
-      <Toggle frequency={frequency} setFrequency={setFrequency} />
-      <PriceCards frequency={frequency} loading={loading} priceMap={prices} />
+      <div className="mt-6 w-full max-w-xl rounded-lg border border-border bg-background/70 px-6 py-6 text-sm text-muted-foreground">
+        <ul className="space-y-2">
+          <li>3 analyses/day</li>
+          <li>Uploads supported (MP4)</li>
+          <li>TikTok/IG links: Pro (coming soon)</li>
+        </ul>
+      </div>
     </div>
   );
 }

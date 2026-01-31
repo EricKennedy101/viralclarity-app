@@ -100,18 +100,16 @@ export function AnalysisResult({ analysis, tier = 'full' }: AnalysisResultProps)
         </CardDescription>
         {isLocked ? (
           <div className="rounded-md border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
-            Upgrade to unlock the full analysis.
+            Daily limit reached. Come back tomorrow.
           </div>
         ) : null}
       </CardHeader>
       <CardContent>
         {isPreview ? (
           <div className="mb-4 rounded-md border border-border bg-background p-4 text-sm">
-            <div className="font-medium">
-              Full breakdown is Pro (coming soon) — create account to unlock full during beta
-            </div>
+            <div className="font-medium">Create a free account to unlock the full breakdown</div>
             <p className="mt-2 text-muted-foreground">
-              Unlock beat-by-beat retention mapping, rewrites, templates, and save history.
+              Beta: uploads include full insights after you sign in. TikTok/IG links are Pro (coming soon).
             </p>
             <div className="mt-3 flex flex-col gap-2 sm:flex-row">
               <Button asChild>
@@ -125,11 +123,8 @@ export function AnalysisResult({ analysis, tier = 'full' }: AnalysisResultProps)
         ) : null}
         {isLocked ? (
           <div className="mb-4 rounded-md border border-border bg-background p-4 text-sm">
-            <div className="font-medium">Upgrade to unlock full analysis</div>
-            <p className="mt-2 text-muted-foreground">Free plan includes 3 analyses/month.</p>
-            <Button asChild className="mt-3">
-              <Link href="/dashboard/subscriptions">Upgrade</Link>
-            </Button>
+            <div className="font-medium">Daily limit reached</div>
+            <p className="mt-2 text-muted-foreground">Come back tomorrow for more credits.</p>
           </div>
         ) : null}
         {isPreview && (
@@ -156,7 +151,7 @@ export function AnalysisResult({ analysis, tier = 'full' }: AnalysisResultProps)
               {analysis.transcript}
             </div>
             {isLocked ? (
-              <p className="mt-2 text-xs text-muted-foreground">Transcript truncated. Upgrade to unlock the rest.</p>
+              <p className="mt-2 text-xs text-muted-foreground">Transcript truncated. Come back tomorrow.</p>
             ) : null}
           </TabsContent>
 
@@ -164,7 +159,7 @@ export function AnalysisResult({ analysis, tier = 'full' }: AnalysisResultProps)
             <div className="relative">
               {isLocked ? (
                 <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md border border-border bg-background/80 text-sm font-medium">
-                  Upgrade to unlock this section
+                  Daily limit reached
                 </div>
               ) : null}
               <div className={`space-y-4 text-sm ${isLocked ? 'blur-sm pointer-events-none select-none' : ''}`}>
@@ -222,7 +217,7 @@ export function AnalysisResult({ analysis, tier = 'full' }: AnalysisResultProps)
               {isGated ? (
                 <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md border border-border bg-background/80 text-sm font-medium">
                   <Lock className="mr-2 h-4 w-4" aria-hidden="true" />
-                  {isPreview ? 'Create an account to unlock this section' : 'Upgrade to unlock this section'}
+                  {isPreview ? 'Create an account to unlock this section' : 'Daily limit reached'}
                 </div>
               ) : null}
               <div className={`space-y-3 text-sm ${isGated ? 'blur-sm pointer-events-none select-none' : ''}`}>
@@ -244,7 +239,7 @@ export function AnalysisResult({ analysis, tier = 'full' }: AnalysisResultProps)
               {isGated ? (
                 <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md border border-border bg-background/80 text-sm font-medium">
                   <Lock className="mr-2 h-4 w-4" aria-hidden="true" />
-                  {isPreview ? 'Create an account to unlock this section' : 'Upgrade to unlock this section'}
+                  {isPreview ? 'Create an account to unlock this section' : 'Daily limit reached'}
                 </div>
               ) : null}
               <div className={`space-y-5 text-sm ${isGated ? 'blur-sm pointer-events-none select-none' : ''}`}>
