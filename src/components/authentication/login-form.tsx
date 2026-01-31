@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { login, loginAnonymously } from '@/app/login/actions';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AuthenticationForm } from '@/components/authentication/authentication-form';
 import { Separator } from '@/components/ui/separator';
@@ -18,8 +18,17 @@ export function LoginForm() {
   const [password, setPassword] = useState('');
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [isMagicLinkSending, setIsMagicLinkSending] = useState(false);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://viralclarityio-101.vercel.app';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
   const nextPath = searchParams.get('next') ?? '/analyze';
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    if (nextPath) {
+      window.localStorage.setItem('returnTo', nextPath);
+    }
+  }, [nextPath]);
 
   function handleLogin() {
     login({ email, password }).then((data) => {
@@ -43,7 +52,7 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${siteUrl}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+        emailRedirectTo: `${siteUrl}/auth/callback`,
       },
     });
     if (error) {

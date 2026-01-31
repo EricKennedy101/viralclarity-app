@@ -1,7 +1,6 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { createClient } from '@/utils/supabase/server';
@@ -25,11 +24,11 @@ export async function signup(data: FormData) {
 
 export async function sendMagicLink(email: string) {
   const supabase = await createClient();
-  const origin = (await headers()).get('origin') ?? '';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${origin}/auth/callback?next=/analyze`,
+      emailRedirectTo: `${siteUrl}/auth/callback`,
     },
   });
 
