@@ -3,12 +3,22 @@ import { createClient } from '@/utils/supabase/server-internal';
 import { UPLOAD_BUCKET } from '@/utils/supabase/storage';
 
 const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024;
+const JSON_CONTENT_TYPE = 'application/json';
+
+export async function GET() {
+  return Response.json({ error: 'Method not allowed. Use POST.' }, { status: 405, headers: { Allow: 'POST' } });
+}
 
 export async function POST(request: NextRequest) {
   try {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return Response.json({ error: 'We couldn’t analyze this video. Try a shorter clip or try again.' }, { status: 500 });
+    }
+
+    const contentType = request.headers.get('content-type') ?? '';
+    if (!contentType.includes(JSON_CONTENT_TYPE)) {
+      return Response.json({ error: 'Expected JSON body with storagePath.' }, { status: 415 });
     }
 
     const body = (await request.json()) as { storagePath?: string };
