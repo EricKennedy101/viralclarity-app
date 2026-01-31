@@ -433,7 +433,7 @@ export function HomePage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-xl">Beta access</CardTitle>
-              <CardDescription>Everything is free during beta.</CardDescription>
+              <CardDescription>Beta pricing TBD.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
               <p>3 analyses/day</p>
