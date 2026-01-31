@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
+import { getSiteUrl } from '@/lib/siteUrl';
 
 interface FormData {
   email: string;
@@ -22,10 +23,7 @@ export async function login(data: FormData) {
 
 export async function signInWithGithub() {
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
-  if (!siteUrl) {
-    return { error: true };
-  }
+  const siteUrl = getSiteUrl();
   const { data } = await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
@@ -39,10 +37,7 @@ export async function signInWithGithub() {
 
 export async function sendMagicLink(email: string) {
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
-  if (!siteUrl) {
-    return { error: true };
-  }
+  const siteUrl = getSiteUrl();
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {

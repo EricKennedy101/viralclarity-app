@@ -9,6 +9,7 @@ import { AuthenticationForm } from '@/components/authentication/authentication-f
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 import { createClient } from '@/utils/supabase/client';
+import { getSiteUrl } from '@/lib/siteUrl';
 
 export function LoginForm() {
   const { toast } = useToast();
@@ -18,7 +19,7 @@ export function LoginForm() {
   const [password, setPassword] = useState('');
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [isMagicLinkSending, setIsMagicLinkSending] = useState(false);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
+  const siteUrl = getSiteUrl();
   const nextPath = searchParams.get('next') ?? '/analyze';
 
   useEffect(() => {
@@ -44,11 +45,6 @@ export function LoginForm() {
       return;
     }
     setIsMagicLinkSending(true);
-    if (!siteUrl) {
-      toast({ description: 'Missing site URL configuration. Please try again later.', variant: 'destructive' });
-      setIsMagicLinkSending(false);
-      return;
-    }
     if (!supabase) {
       toast({ description: 'Unable to send link right now. Try again.', variant: 'destructive' });
       setIsMagicLinkSending(false);

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { createClient } from '@/utils/supabase/server';
+import { getSiteUrl } from '@/lib/siteUrl';
 
 interface FormData {
   email: string;
@@ -24,10 +25,7 @@ export async function signup(data: FormData) {
 
 export async function sendMagicLink(email: string) {
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
-  if (!siteUrl) {
-    return { error: true };
-  }
+  const siteUrl = getSiteUrl();
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
