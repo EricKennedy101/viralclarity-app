@@ -24,7 +24,10 @@ export async function signup(data: FormData) {
 
 export async function sendMagicLink(email: string) {
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
+  if (!siteUrl) {
+    return { error: true };
+  }
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {

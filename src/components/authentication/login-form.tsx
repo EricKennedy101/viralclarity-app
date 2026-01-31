@@ -18,7 +18,7 @@ export function LoginForm() {
   const [password, setPassword] = useState('');
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [isMagicLinkSending, setIsMagicLinkSending] = useState(false);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
   const nextPath = searchParams.get('next') ?? '/analyze';
 
   useEffect(() => {
@@ -44,6 +44,11 @@ export function LoginForm() {
       return;
     }
     setIsMagicLinkSending(true);
+    if (!siteUrl) {
+      toast({ description: 'Missing site URL configuration. Please try again later.', variant: 'destructive' });
+      setIsMagicLinkSending(false);
+      return;
+    }
     if (!supabase) {
       toast({ description: 'Unable to send link right now. Try again.', variant: 'destructive' });
       setIsMagicLinkSending(false);
