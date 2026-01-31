@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import type { AnalysisTier, VideoAnalysisRecord } from '@/lib/viralclarity/types';
 import { toPreviewAnalysis } from '@/lib/viralclarity/preview';
 import { createClient } from '@/utils/supabase/client';
-import { getUploadPath, UPLOAD_BUCKET } from '@/utils/supabase/storage';
+import { UPLOAD_BUCKET } from '@/utils/supabase/storage';
 import { useUserInfo } from '@/hooks/useUserInfo';
 
 type AnalyzeApiResponse =
@@ -81,17 +81,46 @@ export default function AnalyzePage() {
           throw new Error('Upload failed. Please refresh and try again.');
         }
 
-        const path = getUploadPath(null, file.name);
-        const { error: uploadError } = await supabase.storage.from(UPLOAD_BUCKET).upload(path, file, {
-          upsert: true,
-          contentType: file.type,
+        const uploadUrlResponse = await fetch('/api/upload-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: file.name, contentType: file.type }),
         });
 
-        if (uploadError) {
-          throw new Error('Upload failed. Make sure your video is under 50MB.');
+        if (!uploadUrlResponse.ok) {
+          const errorText = await uploadUrlResponse.text();
+          throw new Error(errorText || 'Upload failed. Please try again.');
         }
 
-        const transcribeBody = { storagePath: path };
+        const uploadUrlContentType = uploadUrlResponse.headers.get('content-type') ?? '';
+        if (!uploadUrlContentType.includes('application/json')) {
+          throw new Error('Upload failed. Please try again.');
+        }
+
+        const uploadUrlPayload = (await uploadUrlResponse.json()) as { path?: string; token?: string };
+        if (!uploadUrlPayload?.path || !uploadUrlPayload?.token) {
+          throw new Error('Upload failed. Please try again.');
+        }
+
+        const { error: uploadError } = await supabase.storage
+          .from(UPLOAD_BUCKET)
+          .uploadToSignedUrl(uploadUrlPayload.path, uploadUrlPayload.token, file, {
+            contentType: file.type,
+          });
+
+        if (uploadError) {
+          if (process.env.NODE_ENV !== 'production') {
+            console.log({ error: uploadError });
+          }
+          const errorMessage = uploadError.message ?? 'Upload failed. Please try again.';
+          const statusSuffix =
+            typeof (uploadError as { statusCode?: number }).statusCode === 'number'
+              ? ` (status ${(uploadError as { statusCode?: number }).statusCode})`
+              : '';
+          throw new Error(`${errorMessage}${statusSuffix}`);
+        }
+
+        const transcribeBody = { storagePath: uploadUrlPayload.path };
         const response = await fetch('/api/transcribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
