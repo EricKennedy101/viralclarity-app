@@ -10,13 +10,14 @@ interface Props {
   priceSuffix: string;
 }
 
-export function PriceAmount({ loading, priceMap, priceSuffix, tier, value }: Props) {
+export function PriceAmount(props: Props) {
+  const { loading, tier } = props;
   const isAdvanced = tier.id === 'advanced';
 
   return (
     <div className="mt-6 flex flex-col px-8">
       <div className="min-h-[120px] flex flex-col justify-end">
-        {loading && !isFree && !isPro && !isAdvanced ? (
+        {loading && !isAdvanced ? (
           <Skeleton className="h-[96px] w-full bg-border" />
         ) : isAdvanced ? (
           <>
