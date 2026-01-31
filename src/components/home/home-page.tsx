@@ -411,8 +411,11 @@ export function HomePage() {
                 <Button asChild variant="outline">
                   <Link href="/history">Saved history</Link>
                 </Button>
-                <Button variant="outline" disabled>
-                  Templates (coming soon)
+                <Button variant="outline" disabled className="justify-between gap-2">
+                  <span>Templates</span>
+                  <span className="rounded-full border border-border px-2 py-0.5 text-[10px] uppercase text-muted-foreground">
+                    Coming soon
+                  </span>
                 </Button>
               </div>
             </div>
