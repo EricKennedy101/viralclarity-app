@@ -15,6 +15,7 @@ import { useUserInfo } from '@/hooks/useUserInfo';
 type AnalyzeApiResponse =
   | {
       tier?: 'preview' | 'full';
+      remaining?: number | null;
       hook_analysis: {
         hook_text: string;
         why_it_works: string[];
@@ -32,6 +33,7 @@ type AnalyzeApiResponse =
   | {
       locked: true;
       message?: string;
+      remaining?: number | null;
     };
 
 const createId = () => {
@@ -51,6 +53,7 @@ export default function AnalyzePage() {
   const [error, setError] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisStep, setAnalysisStep] = useState('');
+  const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
   const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 
   const handleAnalyzeSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -178,7 +181,8 @@ export default function AnalyzePage() {
       }
 
       if ('locked' in analyzePayload && analyzePayload.locked) {
-        setError(analyzePayload.message ?? 'Free tier limit reached. Upgrade to unlock full analysis.');
+        setError(analyzePayload.message ?? 'Daily limit reached. Come back tomorrow.');
+        setRemainingCredits(analyzePayload.remaining ?? 0);
         const lockedAnalysis: VideoAnalysisRecord = {
           id: createId(),
           status: 'completed',
@@ -250,6 +254,7 @@ export default function AnalyzePage() {
       };
 
       const resolvedTier: AnalysisTier = !isAuthed ? 'preview' : tier;
+      setRemainingCredits(typeof typedPayload.remaining === 'number' ? typedPayload.remaining : null);
       setAnalysisTier(resolvedTier);
       setAnalysis(resolvedTier === 'preview' ? toPreviewAnalysis(nextAnalysis) : nextAnalysis);
     } catch (analysisError) {
@@ -308,6 +313,9 @@ export default function AnalyzePage() {
             </Button>
             <p className="text-xs text-muted-foreground">Pro features require login.</p>
             <p className="text-xs text-muted-foreground">No signup required. Limited preview.</p>
+            {isAuthed && remainingCredits !== null ? (
+              <p className="text-xs text-muted-foreground">You have {remainingCredits} credits left today.</p>
+            ) : null}
             {isAnalyzing ? (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />

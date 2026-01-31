@@ -20,7 +20,7 @@ export async function signup(data: FormData) {
   }
 
   revalidatePath('/', 'layout');
-  redirect('/analyze');
+  redirect('/app');
 }
 
 export async function sendMagicLink(email: string) {

@@ -22,6 +22,7 @@ import { UPLOAD_BUCKET } from '@/utils/supabase/storage';
 type AnalyzeApiResponse =
   | {
       tier?: 'preview' | 'full';
+      remaining?: number | null;
       hook_analysis: {
         hook_text: string;
         why_it_works: string[];
@@ -39,6 +40,7 @@ type AnalyzeApiResponse =
   | {
       locked: true;
       message?: string;
+      remaining?: number | null;
     };
 
 const createId = () => {
@@ -61,6 +63,7 @@ export function HomePage() {
   const [saveError, setSaveError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [storagePath, setStoragePath] = useState<string | null>(null);
+  const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
   const router = useRouter();
   const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 
@@ -193,7 +196,8 @@ export function HomePage() {
       }
 
       if ('locked' in analyzePayload && analyzePayload.locked) {
-        setError(analyzePayload.message ?? 'Free tier limit reached. Upgrade to unlock full analysis.');
+        setError(analyzePayload.message ?? 'Daily limit reached. Come back tomorrow.');
+        setRemainingCredits(analyzePayload.remaining ?? 0);
         const lockedAnalysis: VideoAnalysisRecord = {
           id: createId(),
           status: 'completed',
@@ -265,6 +269,7 @@ export function HomePage() {
       };
 
       const resolvedTier: AnalysisTier = !isAuthed ? 'preview' : tier;
+      setRemainingCredits(typeof typedPayload.remaining === 'number' ? typedPayload.remaining : null);
       setAnalysisTier(resolvedTier);
       setAnalysis(resolvedTier === 'preview' ? toPreviewAnalysis(nextAnalysis) : nextAnalysis);
     } catch (analysisError) {
@@ -374,6 +379,9 @@ export function HomePage() {
                 </Button>
                 <p className="text-xs text-muted-foreground">Pro features require login.</p>
                 <p className="text-xs text-muted-foreground">No signup required. Limited preview.</p>
+                {user && remainingCredits !== null ? (
+                  <p className="text-xs text-muted-foreground">You have {remainingCredits} credits left today.</p>
+                ) : null}
                 {isAnalyzing ? (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />

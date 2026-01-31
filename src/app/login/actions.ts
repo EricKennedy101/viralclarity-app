@@ -18,7 +18,7 @@ export async function login(data: FormData) {
   }
 
   revalidatePath('/', 'layout');
-  redirect('/analyze');
+  redirect('/app');
 }
 
 export async function signInWithGithub() {
@@ -56,7 +56,7 @@ export async function loginAnonymously() {
   const supabase = await createClient();
   const { error: signInError } = await supabase.auth.signInAnonymously();
   const { error: updateUserError } = await supabase.auth.updateUser({
-    email: `aeroedit+${Date.now().toString(36)}@paddle.com`,
+    email: `viralclarity+${Date.now().toString(36)}@viralclarity.app`,
   });
 
   if (signInError || updateUserError) {

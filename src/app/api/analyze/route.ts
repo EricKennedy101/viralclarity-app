@@ -17,6 +17,8 @@ type AnalyzeResponse = {
   };
 };
 
+const DAILY_CREDITS = 3;
+
 const buildSystemPrompt = () => `
 You are a ruthless short-form video strategist who optimizes for retention, curiosity, and replay value.
 You do NOT summarize.
@@ -50,6 +52,43 @@ const parseAnalysisJson = (content: string) => {
   return JSON.parse(content) as AnalyzeResponse;
 };
 
+const getTodayKey = () => new Date().toISOString().slice(0, 10);
+
+const consumeCredit = async (supabase: Awaited<ReturnType<typeof createClient>>, userId: string) => {
+  const dateKey = getTodayKey();
+  const { data: usage, error } = await supabase
+    .from('usage_credits')
+    .select('used')
+    .eq('user_id', userId)
+    .eq('date', dateKey)
+    .maybeSingle();
+
+  if (error) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  const used = usage?.used ?? 0;
+  if (used >= DAILY_CREDITS) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  const nextUsed = used + 1;
+  const { error: upsertError } = await supabase.from('usage_credits').upsert(
+    {
+      user_id: userId,
+      date: dateKey,
+      used: nextUsed,
+    },
+    { onConflict: 'user_id,date' },
+  );
+
+  if (upsertError) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  return { allowed: true, remaining: Math.max(0, DAILY_CREDITS - nextUsed) };
+};
+
 export async function POST(request: NextRequest) {
   try {
     const apiKey = process.env.OPENAI_API_KEY;
@@ -63,41 +102,16 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     const isPreview = !user;
-    const monthKey = `${new Date().getUTCFullYear()}-${String(new Date().getUTCMonth() + 1).padStart(2, '0')}`;
-    if (!isPreview) {
-      const { data: profile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('is_pro')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (profileError) {
-        return Response.json({ error: 'We couldn’t analyze this video. Try a shorter clip or try again.' }, { status: 500 });
-      }
-
-      const isPro = profile?.is_pro ?? false;
-      if (!isPro) {
-        const { data: usage, error: usageError } = await supabase
-          .from('user_usage')
-          .select('analyses_count')
-          .eq('user_id', user.id)
-          .eq('month_key', monthKey)
-          .maybeSingle();
-
-        if (usageError) {
-          return Response.json({ error: 'We couldn’t analyze this video. Try a shorter clip or try again.' }, { status: 500 });
-        }
-
-        if ((usage?.analyses_count ?? 0) >= 3) {
-          return Response.json(
-            {
-              locked: true,
-              message: 'Free tier limit reached. Upgrade to Pro to unlock full analysis.',
-            },
-            { status: 200 },
-          );
-        }
-      }
+    const creditStatus = !isPreview ? await consumeCredit(supabase, user.id) : null;
+    if (!isPreview && creditStatus && !creditStatus.allowed) {
+        return Response.json(
+          {
+            locked: true,
+            message: 'Daily limit reached. Come back tomorrow.',
+            remaining: creditStatus.remaining,
+          },
+          { status: 200 },
+        );
     }
 
     const body = (await request.json()) as { transcript?: string };
@@ -163,7 +177,7 @@ Then return ONLY valid JSON in this shape:
           },
         });
       }
-      return Response.json({ ...parsed, tier: 'full' });
+      return Response.json({ ...parsed, tier: 'full', remaining: creditStatus?.remaining ?? null });
     } catch (error) {
       console.log('OpenAI analyze JSON parse error', error);
       const repairPrompt = `Fix this into valid JSON only, using the exact schema.\n\n${content}`;
@@ -183,7 +197,7 @@ Then return ONLY valid JSON in this shape:
       try {
         const repairedParsed = parseAnalysisJson(repairedContent);
         if (isPreview) {
-          return Response.json({
+        return Response.json({
             tier: 'preview',
             hook_analysis: {
               hook_text: repairedParsed.hook_analysis.hook_text,
@@ -197,7 +211,7 @@ Then return ONLY valid JSON in this shape:
             },
           });
         }
-        return Response.json({ ...repairedParsed, tier: 'full' });
+      return Response.json({ ...repairedParsed, tier: 'full', remaining: creditStatus?.remaining ?? null });
       } catch (repairError) {
         console.log('OpenAI analyze repair JSON parse error', repairError);
         return Response.json({ error: 'We couldn’t analyze this video. Try a shorter clip or try again.' }, { status: 502 });

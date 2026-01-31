@@ -16,5 +16,5 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL('/login?error=auth_failed', url));
   }
 
-  return NextResponse.redirect(new URL('/', url));
+  return NextResponse.redirect(new URL('/app', url));
 }
