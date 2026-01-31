@@ -367,6 +367,7 @@ export function HomePage() {
                   {!file && sourceUrl.trim().length > 0 ? (
                     <p className="text-xs text-muted-foreground">Upload required for transcript soon.</p>
                   ) : null}
+                  <p className="text-xs text-muted-foreground">TikTok/IG link paste: coming soon.</p>
                 </div>
                 {error ? <p className="text-sm text-destructive">{error}</p> : null}
                 <Button type="submit" size="lg" className="w-full" disabled={isAnalyzing}>
@@ -402,6 +403,20 @@ export function HomePage() {
               ) : null}
             </CardContent>
           </Card>
+
+          {user ? (
+            <div className="mt-4 rounded-md border border-border bg-background p-4">
+              <div className="text-sm font-medium">Your workspace</div>
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                <Button asChild variant="outline">
+                  <Link href="/history">Saved history</Link>
+                </Button>
+                <Button variant="outline" disabled>
+                  Templates (coming soon)
+                </Button>
+              </div>
+            </div>
+          ) : null}
 
           {analysis ? (
             <AnalysisResult analysis={analysis} tier={analysisTier} />

@@ -302,6 +302,7 @@ export default function AnalyzePage() {
                 value={sourceUrl}
                 onChange={(event) => setSourceUrl(event.target.value)}
               />
+              <p className="text-xs text-muted-foreground">TikTok/IG link paste: coming soon.</p>
             </div>
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
             <Button type="submit" size="lg" className="w-full text-base" disabled={isAnalyzing}>
