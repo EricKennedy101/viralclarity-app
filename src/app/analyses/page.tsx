@@ -14,7 +14,7 @@ export default async function AnalysesPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-xl">My Analyses</CardTitle>
-            <CardDescription>Log in to view your saved analyses.</CardDescription>
+            <CardDescription>Log in to view your saved videos.</CardDescription>
           </CardHeader>
           <CardContent>
             <Link className="text-sm text-primary underline underline-offset-4" href="/login">
@@ -38,7 +38,7 @@ export default async function AnalysesPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-xl">My Analyses</CardTitle>
-            <CardDescription>Unable to load analyses right now.</CardDescription>
+            <CardDescription>Unable to load videos right now.</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">{error.message}</p>
@@ -53,7 +53,7 @@ export default async function AnalysesPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">My Analyses</CardTitle>
-          <CardDescription>Recent analyses saved to your account.</CardDescription>
+          <CardDescription>Recent videos saved to your account.</CardDescription>
         </CardHeader>
         <CardContent>
           {data?.length ? (
@@ -78,7 +78,7 @@ export default async function AnalysesPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-muted-foreground">No analyses yet. Try one from the home page.</p>
+            <p className="text-sm text-muted-foreground">No videos yet. Try one from the home page.</p>
           )}
         </CardContent>
       </Card>

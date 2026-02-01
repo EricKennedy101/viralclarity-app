@@ -378,8 +378,15 @@ export function HomePage() {
                     {user ? 'Go to dashboard' : 'Save results (create free account)'}
                   </Link>
                 </Button>
+                {!user ? (
+                  <p className="text-xs text-muted-foreground">
+                    Mobile login improvements coming soon. Desktop login works best today.
+                  </p>
+                ) : null}
                 <p className="text-xs text-muted-foreground">No signup required. Limited preview.</p>
-                <p className="text-xs text-muted-foreground">Credits: 3 analyses/day (may change during beta).</p>
+                <p className="text-xs text-muted-foreground">
+                  Analyze up to 3 videos per day (may change during beta).
+                </p>
                 {user && remainingCredits !== null ? (
                   <p className="text-xs text-muted-foreground">You have {remainingCredits} credits left today.</p>
                 ) : null}
@@ -432,13 +439,13 @@ export function HomePage() {
         <section className="mx-auto w-full max-w-4xl px-4 pb-16">
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl">Beta access</CardTitle>
-              <CardDescription>Beta pricing TBD.</CardDescription>
+              <CardTitle className="text-xl">Beta access (free)</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
-              <p>3 analyses/day</p>
-              <p>Uploads supported (MP4)</p>
-              <p>TikTok/IG links: Pro (coming soon)</p>
+              <p>Analyze up to 3 videos per day</p>
+              <p>Full breakdown during beta</p>
+              <p>Upload MP4 videos</p>
+              <p>TikTok & Instagram links coming soon</p>
             </CardContent>
           </Card>
         </section>

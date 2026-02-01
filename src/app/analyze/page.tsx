@@ -313,8 +313,15 @@ export default function AnalyzePage() {
                 {isAuthed ? 'Go to dashboard' : 'Save results (create free account)'}
               </Link>
             </Button>
+            {!isAuthed ? (
+              <p className="text-xs text-muted-foreground">
+                Mobile login improvements coming soon. Desktop login works best today.
+              </p>
+            ) : null}
             <p className="text-xs text-muted-foreground">No signup required. Limited preview.</p>
-            <p className="text-xs text-muted-foreground">Credits: 3 analyses/day (may change during beta).</p>
+            <p className="text-xs text-muted-foreground">
+              Analyze up to 3 videos per day (may change during beta).
+            </p>
             {isAuthed && remainingCredits !== null ? (
               <p className="text-xs text-muted-foreground">You have {remainingCredits} credits left today.</p>
             ) : null}

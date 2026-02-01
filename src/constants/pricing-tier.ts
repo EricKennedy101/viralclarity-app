@@ -10,15 +10,15 @@ export interface Tier {
 
 export const PricingTier: Tier[] = [
   {
-    name: 'Beta',
+    name: 'Beta (free)',
     id: 'starter',
     icon: '/assets/icons/price-tiers/free-icon.svg',
     description: '',
     features: [
-      '3 analyses/day',
-      'Full breakdown for uploads',
-      'Save results after login',
-      'TikTok/IG links: Pro (coming soon)',
+      'Analyze up to 3 videos per day',
+      'Full breakdown during beta',
+      'Upload MP4 videos',
+      'TikTok & Instagram links coming soon',
     ],
     featured: false,
     priceId: { month: 'pri_01hsxyh9txq4rzbrhbyngkhy46', year: 'pri_01hsxyh9txq4rzbrhbyngkhy46' },

@@ -15,7 +15,7 @@ export default async function HistoryPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-xl">Saved history</CardTitle>
-            <CardDescription>Log in to view your saved analyses.</CardDescription>
+            <CardDescription>Log in to view your saved videos.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">Create a free account to save results.</p>
@@ -33,11 +33,11 @@ export default async function HistoryPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Saved history</CardTitle>
-          <CardDescription>Your saved analyses will appear here.</CardDescription>
+          <CardDescription>Your saved videos will appear here.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
-            No saved analyses yet.
+            No saved videos yet.
           </div>
         </CardContent>
       </Card>
